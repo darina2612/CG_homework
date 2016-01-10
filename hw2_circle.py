@@ -128,8 +128,8 @@ while 1:
             sys.exit()
         if event.type == pygame.MOUSEBUTTONUP:
             last_click = pygame.mouse.get_pos()
-            set_pixel(last_click)
             if first_point == ():
+                set_pixel(last_click)
                 first_point = last_click
             elif second_point == ():
                 second_point = last_click
