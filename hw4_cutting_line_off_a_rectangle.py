@@ -68,21 +68,21 @@ def generate_bresenham_line(point_A, point_B, pixels):
                 x += incX
 
 
-def draw_line(point_A, point_B):
+def draw_line(point_A, point_B, color = black):
     line = []
 
     generate_bresenham_line(point_A, point_B, line)
 
-    color = black #colors[int(random.random() * 10) % colors_count]
+    #color = black #colors[int(random.random() * 10) % colors_count]
     for pixel in line:
         set_pixel(pixel, color)
 
 
 def draw_200_x_100_rectangle(middle_point):
     a = (int(middle_point[0] - 100), int(middle_point[1] - 50))
-    b = (int(middle_point[0] - 100), int(middle_point[1] + 50))
+    b = (int(middle_point[0] + 100), int(middle_point[1] - 50))
     c = (int(middle_point[0] + 100), int(middle_point[1] + 50))
-    d = (int(middle_point[0] + 100), int(middle_point[1] - 50))
+    d = (int(middle_point[0] - 100), int(middle_point[1] + 50))
 
     draw_line(a, b)
     draw_line(b, c)
@@ -94,8 +94,82 @@ def rectangle_diagonal_by_given_center(center):
     return (int(center[0] - 100), int(center[1] - 50)), (int(center[0] + 100), int(center[1] + 50))
 
 
+left = 1
+right = 2
+bottom = 4 
+top = 8
+
+def get_code(point, down_left, up_right):
+    x, y = point
+    xl, yl = down_left
+    xh, yh = up_right
+    code = 0
+
+    if x < xl:
+        code |= left
+    elif x > xh:
+        code |= right
+    if y < yl:
+        code |= bottom
+    elif y > yh:
+        code |= top
+
+    return code
+
+
 def cohen_suttherland_cutting(point1, point2, rect_point_a, rect_point_c):
-    pass
+    x1, y1 = point1
+    x2, y2 = point2
+
+    xl, yl = rect_point_a
+    xh, yh = rect_point_c
+
+    outcode1 = get_code((x1, y1), rect_point_a, rect_point_c)
+    outcode2 = get_code((x2, y2), rect_point_a, rect_point_c)
+
+    accept = 0
+
+    while 1:
+        #m = float((y2 - y1) / (x2 - x1))
+
+        if not (outcode1 | outcode2):
+            accept = 1
+            break
+        elif (outcode1 & outcode2) != 0:
+            break
+        else:
+            x = y = 0
+            temp = 0
+            if outcode1 == 0:
+                temp = outcode2
+            else:
+                temp = outcode1
+        
+            if (temp & top):
+                x = x1 + (x2 - x1) * (yh - y1) / (y2 - y1) 
+                y = yh
+            elif (temp & bottom):
+                x = x1 + (x2 - x1) * (yl - y1) / (y2 - y1)
+                y = yl
+            elif (temp & left):
+                x = xl
+                y =  y1 + (y2 - y1) * (xl - x1) / (x2 - x1)
+            elif (temp & right):
+                x = xh
+                y = y1 + (y2 - y1) * (xh - x1) / (x2 - x1)
+            if temp == outcode1:
+                x1 = int(x)
+                y1 = y
+                outcode1 = get_code((x1, y1), rect_point_a, rect_point_c)
+            else:
+                x2 = int(x)
+                y2 = int(y)
+                outcode2 = get_code((x2, y2), rect_point_a, rect_point_c)
+
+    if accept:
+        time.sleep(0.5)
+        draw_line((int(x1), int(y1)), (int(x2), int(y2)), red)
+        pygame.display.flip()
 
 
 pygame.init()
@@ -127,10 +201,4 @@ while 1:
                 cohen_suttherland_cutting(second_point, third_point, diagonal[0], diagonal[1])
                 first_point = second_point = third_point = ()
 
-
-
-    if first_point != () and second_point != () and 0:
-        draw_line(first_point, second_point, use_bresenham_to_draw_line)
-        first_point = second_point = ()
-    
     pygame.display.flip()

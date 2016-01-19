@@ -36,7 +36,7 @@ def get_pixel(pixel):
 def put_pixel_row(xleft, xright, y, color):
     for x in range(xleft, xright + 1):
         set_pixel((x, y), color)
-    time.sleep(0.5)
+    time.sleep(0.1)
 
 
 def four_symmetric(xc, yc, x, y, pixels):
